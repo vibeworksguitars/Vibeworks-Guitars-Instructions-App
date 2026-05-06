@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vibeworks Guitars — Interactive Build Guide</title>
+  <style>
+    :root {
+      --dark: #1c1c1c;
+      --orange: #e85318;
+      --orange-light: #f07040;
+      --gray-section: #5a6472;
+      --green: #16a34a;
+      --text: #2d2d2d;
+      --border: #e0e0e0;
+      --sidebar-w: 252px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #f4f4f4; color: var(--text); display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* ── Top bar ── */
+    .top-bar { background: var(--dark); color: white; padding: 0 24px; height: 54px; display: flex; align-items: center; justify-content: space-between; position: fixed; top: 0; left: 0; right: 0; z-index: 200; }
+    .logo { display: flex; align-items: center; }
+    .top-right { font-size: 12px; color: #999; }
+    .orange-stripe { height: 3px; background: var(--orange); position: fixed; top: 54px; left: 0; right: 0; z-index: 199; }
+
+    /* ── Progress ── */
+    .prog-track { height: 3px; background: #e0e0e0; position: fixed; top: 57px; left: 0; right: 0; z-index: 198; }
+    .prog-fill { height: 100%; background: var(--green); transition: width 0.4s ease; width: 0%; }
+
+    /* ── Layout ── */
+    .layout { display: flex; margin-top: 60px; min-height: calc(100vh - 60px); }
+
+    /* ── Sidebar ── */
+    .sidebar { width: var(--sidebar-w); background: white; border-right: 1px solid var(--border); position: fixed; top: 60px; bottom: 0; overflow-y: auto; padding: 12px 0 24px; }
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-thumb { background: #ddd; }
+    .sidebar-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #aaa; padding: 10px 18px 4px; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 18px; cursor: pointer; border-left: 3px solid transparent; transition: background 0.15s; }
+    .nav-item:hover { background: #fafafa; }
+    .nav-item.active { background: #fff5f0; border-left-color: var(--orange); }
+    .nav-item.done { }
+    .nav-num { width: 22px; height: 22px; border-radius: 4px; background: var(--gray-section); color: white; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s; }
+    .nav-item.active .nav-num { background: var(--orange); }
+    .nav-item.done .nav-num { background: var(--green); }
+    .nav-lbl { font-size: 13px; font-weight: 500; flex: 1; color: var(--text); }
+    .nav-item.active .nav-lbl { color: var(--orange); font-weight: 600; }
+    .nav-item.done .nav-lbl { color: var(--green); }
+    .nav-ck { font-size: 12px; color: var(--green); }
+    .sidebar-divider { height: 1px; background: var(--border); margin: 8px 18px; }
+
+    /* ── Main ── */
+    .main { margin-left: var(--sidebar-w); flex: 1; padding: 32px 36px 60px; max-width: 860px; }
+    .section { display: none; animation: fadeIn 0.18s ease; }
+    .section.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ── Section header ── */
+    .sec-head { display: flex; align-items: center; gap: 16px; margin-bottom: 26px; }
+    .sec-badge { width: 54px; height: 54px; background: var(--gray-section); border-radius: 8px 8px 8px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; color: white; }
+    .sec-badge .n { font-size: 20px; font-weight: 800; line-height: 1; }
+    .sec-badge .l { font-size: 8px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.75; }
+    .sec-title { font-size: 24px; font-weight: 800; color: var(--dark); }
+    .sec-sub { font-size: 13px; color: #888; margin-top: 2px; }
+
+    /* ── Content ── */
+    .content { font-size: 15px; line-height: 1.75; color: #333; }
+    .content h3 { font-size: 15px; font-weight: 700; color: var(--dark); margin: 24px 0 8px; padding-bottom: 4px; border-bottom: 1px solid var(--border); }
+    .content p { margin-bottom: 13px; }
+    .term { color: var(--orange); font-weight: 600; }
+
+    /* ── Callouts ── */
+    .callout { border: 1.5px solid var(--orange); border-radius: 8px; padding: 16px 20px; margin: 18px 0; background: #fff8f5; }
+    .callout-title { font-size: 11px; font-weight: 800; color: var(--orange); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+    .callout p { margin-bottom: 9px; font-size: 14px; }
+    .callout p:last-child { margin-bottom: 0; }
+    .tip { background: #f0fdf4; border-left: 4px solid var(--green); padding: 11px 15px; margin: 14px 0; border-radius: 0 6px 6px 0; font-size: 14px; line-height: 1.6; }
+    .tip strong { color: var(--green); }
+    .warn { background: #fffbeb; border-left: 4px solid #f59e0b; padding: 11px 15px; margin: 14px 0; border-radius: 0 6px 6px 0; font-size: 14px; }
+
+    /* ── Divider ── */
+    .divider { height: 1px; background: var(--border); margin: 26px 0; }
+
+    /* ── Checklist ── */
+    .checklist { list-style: none; margin: 14px 0; background: white; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .checklist li { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 14px; }
+    .checklist li:last-child { border-bottom: none; }
+    .checklist input[type="checkbox"] { width: 15px; height: 15px; flex-shrink: 0; margin-top: 2px; accent-color: var(--orange); cursor: pointer; }
+    .checklist label { cursor: pointer; line-height: 1.5; }
+    .checklist input:checked + label { text-decoration: line-through; color: #aaa; }
+
+    /* ── Tabs ── */
+    .tab-buttons { display: flex; gap: 4px; border-bottom: 2px solid var(--border); margin-bottom: 16px; }
+    .tab-btn { padding: 8px 18px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; background: none; color: #888; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.15s; }
+    .tab-btn.active { color: var(--orange); border-bottom-color: var(--orange); }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* ── Finish grid ── */
+    .finish-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 18px 0; }
+    .finish-card { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+    .finish-card-title { font-size: 11px; font-weight: 800; color: var(--orange); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+    .finish-card p { font-size: 13px; line-height: 1.5; margin: 0; color: #555; }
+
+    /* ── Truss ── */
+    .truss-row { display: flex; gap: 14px; margin: 16px 0; }
+    .truss-card { flex: 1; background: white; border: 1px solid var(--border); border-radius: 8px; padding: 16px; text-align: center; }
+    .truss-label { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+    .truss-card.concave .truss-label { color: #2563eb; }
+    .truss-card.convex .truss-label { color: #dc2626; }
+    .truss-icon { font-size: 26px; margin: 8px 0; }
+    .truss-desc { font-size: 12px; color: #555; }
+    .truss-fix { font-size: 12px; margin-top: 8px; color: #333; background: #f5f5f5; border-radius: 4px; padding: 6px 8px; }
+
+    /* ── Image pair ── */
+    .img-pair { display: flex; gap: 14px; margin: 18px 0; }
+    .img-card { flex: 1; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; position: relative; }
+    .img-card-inner { padding: 20px; background: #f8f8f8; text-align: center; font-size: 13px; color: #666; min-height: 130px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
+    .img-badge-abs { position: absolute; top: 8px; left: 8px; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 14px; }
+    .badge-x { background: #ef4444; color: white; }
+    .badge-ok { background: var(--green); color: white; }
+
+    /* ── Model selector ── */
+    .model-box { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 18px; margin: 18px 0; }
+    .model-box label { display: block; font-size: 11px; font-weight: 800; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    .model-box select { width: 100%; padding: 9px 12px; font-size: 14px; border: 1.5px solid var(--border); border-radius: 6px; background: white; color: var(--text); cursor: pointer; outline: none; }
+    .model-box select:focus { border-color: var(--orange); }
+    .diagram-area { margin-top: 16px; border: 1px solid var(--border); border-radius: 8px; background: #fafafa; padding: 24px; min-height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 8px; }
+    .diag-title { font-size: 15px; font-weight: 700; color: var(--dark); }
+    .diag-desc { font-size: 13px; color: #888; }
+    .diag-placeholder { color: #bbb; font-size: 14px; }
+    .diag-note { font-size: 12px; color: #666; background: #fff8f0; border: 1px solid #ffd6bb; border-radius: 6px; padding: 8px 12px; text-align: left; width: 100%; margin-top: 10px; }
+    .diag-placeholder-box { background: #f5f5f5; border: 2px dashed #ddd; border-radius: 8px; padding: 28px; width: 100%; text-align: center; }
+    .diag-pdf-wrap { width: 100%; margin-top: 10px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+    .diag-pdf-wrap iframe { display: block; width: 100%; height: 520px; border: none; }
+    .diag-open-btn { display: inline-flex; align-items: center; gap: 7px; margin-top: 10px; padding: 9px 18px; background: var(--orange); color: white; border-radius: 7px; text-decoration: none; font-size: 13px; font-weight: 600; }
+    .diag-open-btn:hover { background: var(--orange-light); }
+    .yt-card { display: flex; align-items: center; gap: 14px; background: white; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; text-decoration: none; color: var(--text); margin: 16px 0; transition: box-shadow 0.15s; }
+    .yt-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.1); }
+    .yt-thumb { position: relative; flex-shrink: 0; width: 180px; height: 101px; background: #000; }
+    .yt-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .yt-play { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.35); color: white; font-size: 28px; transition: background 0.15s; }
+    .yt-card:hover .yt-play { background: rgba(232,83,24,0.75); }
+    .yt-label { padding: 12px 16px; }
+    .yt-title { font-size: 14px; font-weight: 700; color: var(--dark); margin-bottom: 4px; }
+    .yt-sub { font-size: 12px; color: #999; }
+
+    /* ── Setup steps ── */
+    .setup-steps { margin: 16px 0; }
+    .setup-step { display: flex; gap: 14px; margin-bottom: 18px; align-items: flex-start; }
+    .step-num { width: 28px; height: 28px; background: var(--orange); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+    .step-body { flex: 1; }
+    .step-body strong { display: block; margin-bottom: 4px; color: var(--dark); font-size: 15px; }
+    .step-body p { font-size: 14px; margin-bottom: 10px; }
+    .intonation-row { display: flex; gap: 10px; margin-top: 8px; }
+    .intonation-card { flex: 1; border-radius: 6px; padding: 10px 12px; font-size: 13px; }
+    .intonation-card.sharp { background: #fff5f5; border: 1px solid #fca5a5; }
+    .intonation-card.flat { background: #f0fdf4; border: 1px solid #86efac; }
+    .intonation-card strong { display: block; margin-bottom: 3px; }
+    .intonation-card.sharp strong { color: #dc2626; }
+    .intonation-card.flat strong { color: var(--green); }
+
+    /* ── Debug flowchart ── */
+    .issue-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+    .issue-btn { padding: 9px 16px; border: 2px solid var(--border); border-radius: 8px; background: white; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; color: var(--text); }
+    .issue-btn:hover, .issue-btn.sel { border-color: var(--orange); color: var(--orange); background: #fff5f0; }
+    .flow-step { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 18px; margin-bottom: 10px; animation: fadeIn 0.18s ease; }
+    .flow-step.past { opacity: 0.45; pointer-events: none; }
+    .flow-q { font-size: 15px; margin-bottom: 12px; color: var(--dark); line-height: 1.5; }
+    .flow-ans-row { display: flex; gap: 10px; }
+    .flow-ans { padding: 7px 18px; border: 2px solid var(--border); border-radius: 6px; background: white; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+    .flow-ans.yes { border-color: var(--green); color: var(--green); }
+    .flow-ans.yes:hover { background: #f0fdf4; }
+    .flow-ans.no { border-color: #ef4444; color: #ef4444; }
+    .flow-ans.no:hover { background: #fff5f5; }
+    .flow-result { border-radius: 8px; padding: 14px 18px; font-size: 15px; font-weight: 600; display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; animation: fadeIn 0.2s ease; }
+    .flow-result.success { background: #f0fdf4; border: 1.5px solid var(--green); color: var(--green); }
+    .flow-result.action { background: #fff8f5; border: 1.5px solid var(--orange); color: var(--dark); }
+    .flow-result.action span { color: var(--orange); font-size: 18px; flex-shrink: 0; }
+    .flow-past-answer { font-size: 12px; color: #aaa; margin-top: 4px; }
+    .flow-restart { padding: 7px 14px; border: 1px solid var(--border); border-radius: 6px; background: white; font-size: 12px; cursor: pointer; color: #888; margin-top: 4px; }
+    .flow-restart:hover { background: #f5f5f5; }
+
+    /* ── Footer nav ── */
+    .sec-footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .btn { padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; }
+    .btn-ghost { background: white; color: #666; border: 1.5px solid var(--border); }
+    .btn-ghost:hover { background: #f5f5f5; }
+    .btn-next { background: var(--orange); color: white; }
+    .btn-next:hover { background: var(--orange-light); }
+    .btn-done { background: var(--green); color: white; }
+    .btn-done:hover { background: #15803d; }
+    .btn-done-state { background: #f0fdf4; color: var(--green); border: 1.5px solid var(--green); cursor: default; }
+    .footer-btns { display: flex; gap: 10px; }
+
+    /* ── Congrats ── */
+    .congrats-wrap { text-align: center; padding: 40px 20px; }
+    .congrats-title { font-size: 38px; font-weight: 800; color: var(--orange); margin-bottom: 10px; }
+    .congrats-sub { font-size: 16px; color: #888; max-width: 380px; margin: 0 auto 24px; }
+    .congrats-link { display: inline-block; background: var(--orange); color: white; padding: 13px 28px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 15px; }
+    .congrats-link:hover { background: var(--orange-light); }
+    .congrats-summary { margin: 32px auto 0; max-width: 380px; background: white; border: 1px solid var(--border); border-radius: 10px; padding: 20px; font-size: 15px; color: #555; }
+    .progress-badge { font-size: 38px; font-weight: 800; color: var(--orange); }
+
+    .media-ph { border-radius: 8px; padding: 16px 18px; margin: 16px 0; display: flex; align-items: flex-start; gap: 14px; }
+    .media-ph.photo { background: #fff8f5; border: 2px dashed var(--orange); }
+    .media-ph.video { background: #f5f0ff; border: 2px dashed #7c3aed; }
+    .media-ph-icon { font-size: 24px; flex-shrink: 0; margin-top: 1px; }
+    .media-ph-body { flex: 1; }
+    .media-ph-type { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
+    .photo .media-ph-type { color: var(--orange); }
+    .video .media-ph-type { color: #7c3aed; }
+    .media-ph-label { font-size: 14px; font-weight: 600; color: var(--dark); margin-bottom: 2px; }
+    .media-ph-hint { font-size: 12px; color: #999; line-height: 1.5; }
+    .jack-pair { display: flex; gap: 16px; margin: 14px 0; }
+    .jack-card { flex: 1; background: white; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; text-align: center; }
+    .jack-card img { width: 100%; display: block; }
+    .jack-card-lbl { padding: 7px 10px; font-size: 13px; font-weight: 600; color: var(--dark); border-top: 1px solid var(--border); background: #fafafa; }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="logo">
+    <svg height="26" viewBox="0 0 260 26" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Vibeworks Guitars">
+      <!-- Waveform icon -->
+      <polyline points="0,13 5,13 7,4 10,22 13,1 16,24 19,8 22,18 25,13 30,13" stroke="white" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- vibeworks (light) + guitars (bold) rendered as one continuous wordmark -->
+      <text font-family="'Segoe UI',system-ui,-apple-system,sans-serif" font-size="16" fill="white" y="19" letter-spacing="0.3">
+        <tspan x="40" font-weight="300">vibeworks</tspan><tspan font-weight="700">guitars</tspan>
+      </text>
+    </svg>
+  </div>
+  <div class="top-right">Interactive Build Guide</div>
+</div>
+<div class="orange-stripe"></div>
+<div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
+
+<div class="layout">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <nav class="sidebar" id="sidebar"></nav>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main">
+
+    <!-- ─── SECTION 1: Introduction ─── -->
+    <div class="section active" id="sec-1">
+      <div class="sec-head">
+        <div class="sec-badge"><div class="n">1</div><div class="l">Intro</div></div>
+        <div><div class="sec-title">Introduction</div><div class="sec-sub">Welcome to your Vibeworks Guitars kit</div></div>
+      </div>
+      <div class="content">
+        <p>So you want to build a guitar? Ok then. Let's get started. This guide provides instructions covering nearly every model we sell. Wiring diagrams specific to your model are in the Wiring section — select your configuration from the dropdown there.</p>
+        <div class="callout">
+          <div class="callout-title">⚡ How This Guide Works</div>
+          <p>Work through the sections in order using the sidebar or the Next button. Check off steps as you complete them and mark each section done — your progress is tracked as you go.</p>
+          <p>The <strong>Wiring section</strong> includes an interactive diagram selector. The <strong>Debug Guide</strong> at the end is an interactive troubleshooter if anything sounds off.</p>
+        </div>
+        <div style="margin-top:18px;padding:16px 20px;background:white;border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+          <div>
+            <div style="font-size:14px;font-weight:700;color:var(--dark);margin-bottom:3px;">Already have your kit ready to wire?</div>
+            <div style="font-size:13px;color:#888;">Select your model and view the diagram for your configuration.</div>
+          </div>
+          <button class="btn btn-next" onclick="go(8)" style="white-space:nowrap;flex-shrink:0;">Go to Wiring →</button>
+        </div>
+      </div>
+      <div class="sec-footer">
+        <div></div>
+        <div class="footer-btns">
+          <button class="btn btn-done" id="done-1" onclick="markDone(1)">Mark Complete ✓</button>
+          <button class="btn btn-next" onclick="go(2)">Start Guide →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── SECTION 2: Before Starting ─── -->
+    <div class="section" id="sec-2">
+      <div class="sec-head">
+        <div class="sec-badge"><div class="n">2</div><div class="l">Prep</div></div>
+        <div><div class="sec-title">Before Starting</div><div class="sec-sub">Set yourself up for success</div></div>
+      </div>
+      <div class="content">
+        <p>Buying a kit is different than buying a finished product. You may encounter issues that require additional attention — small dents, rough edges, pockets that need light sanding. That's normal. If you run into anything you're unsure about, contact us.</p>
+        <div class="callout">
+          <div class="callout-title">⚠ Four Important Tips</div>
+          <p><strong>1. Inspect and test fit before starting.</strong> Find a cracked part right out of the box? We can help. Find it after you've shaped and finished the headstock? That's trickier. Inspect everything first.</p>
+          <p><strong>2. Veneers do not need sanding.</strong> They are prepped for finish. If you do sand, use only a very fine grit and do it by hand.</p>
+          <p><strong>3. Power tools need not apply.</strong> A manual screwdriver beats a power drill for kit builds — no stripped heads, no crooked screws.</p>
+          <p><strong>4. Take your time.</strong> The single biggest difference between a great result and a disappointing one. There's no rush.</p>
+        </div>
+      </div>
+      <div class="sec-footer">
+        <button class="btn btn-ghost" onclick="go(1)">← Back</button>
+        <div class="footer-btns">
+          <button class="btn btn-done" id="done-2" onclick="markDone(2)">Mark Complete ✓</button>
+          <button class="btn btn-next" onclick="go(3)">Next →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── SECTION 3: Test Fit ─── -->
+    <div class="section" id="sec-3">
+      <div class="sec-head">
+        <div class="sec-badge"><div class="n">3</div><div class="l">Test Fit</div></div>
+        <div><div class="sec-title">Test Fit</div><div class="sec-sub">Check everything before you commit</div></div>
+      </div>
+      <div class="content">
+        <p>Before starting your build, test fit all the parts to avoid surprises later.</p>
+
+        <h3>Neck Joint</h3>
+        <p>The neck should fit firmly in the neck pocket. On bolt-on necks, a small amount of play is generally acceptable. If too tight, a small amount of sanding to the body is usually enough. If too loose, a thin shim of any material will close the gap.</p>
+        <p>Many kits have a fretboard that overhangs the body — a small gap under the fretboard is intentional, giving the right string height. <strong>Do not sand the back of the neck to reduce this gap</strong> — it will render the guitar unplayable.</p>
+
+        <h3>Inserting The Neck</h3>
+        <p>The neck pocket is slightly tapered, getting wider toward the upper frets. Necks must be inserted in the correct direction — they will not fit if reversed.</p>
+        <div class="img-pair">
+          <div class="img-card">
+            <div class="img-badge-abs badge-x">✕</div>
+            <img src="data:image/jpeg;base64,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" alt="Incorrect neck insertion" style="width:100%;display:block;">
+            <div style="padding:8px 12px;font-size:13px;font-weight:600;background:#fff5f5;color:#dc2626">Incorrect — won't fit due to taper</div>
+          </div>
+          <div class="img-card">
+            <div class="img-badge-abs badge-ok">✓</div>
+            <img src="data:image/jpeg;base64,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" alt="Correct neck insertion" style="width:100%;display:block;">
+            <div style="padding:8px 12px;font-size:13px;font-weight:600;background:#f0fdf4;color:#16a34a">Correct — heel first, fretboard facing body</div>
+          </div>
+        </div>
+
+        <h3>Checking String Length</h3>
+        <p><span class="term">Scale length</span> = distance from nut to crown of 12th fret × 2. <span class="term">String length</span> = scale length + 1/16 to 1/8 inch. Measure from the nut to the 12th fret, double it, add 1/16" — that should roughly match the nut-to-bridge-center distance. Most bridges are adjustable to fine-tune intonation later.</p>
+
+        <h3>Neck Angle</h3>
+        <p>Many guitars (especially set-neck styles) have a slight neck angle — that's normal. With neck and bridge hardware in position, run a straight edge or string from the nut to the bridge. It should follow the fretboard at a smooth, even plane. If it intersects or gaps widen, check and adjust the truss rod (see Section 5).</p>
+
+<!-- ═══════════════════════════════════════════════════════
+     📸 PHOTO — replace this block with an <img> tag
+     Content: Neck angle check — straight edge running from nut to bridge
+     ─────────────────────────────────────────────────────
+     PHOTO example:
+       <img src="your-image.jpg" alt="Neck angle check — straight edge running from nut to bridge" style="width:100%;border-radius:8px;margin:16px 0;">
+     VIDEO example (YouTube thumbnail card):
+       <a href="https://www.youtube.com/watch?v=VIDEO_ID" target="_blank" class="yt-card">
+         <div class="yt-thumb">
+           <img src="https://img.youtube.com/vi/VIDEO_ID/hqdefault.jpg" alt="Neck angle check — straight edge running from nut to bridge">
+           <div class="yt-play">▶</div>
+         </div>
+         <div class="yt-label">
+           <div class="yt-title">Watch: Neck angle check — straight edge running from nut to bridge</div>
+           <div class="yt-sub">Opens on YouTube ↗</div>
+         </div>
+       </a>
+     ═══════════════════════════════════════════════════════ -->
+        <div class="media-ph photo">
+          <div class="media-ph-icon">📸</div>
+          <div class="media-ph-body">
+            <div class="media-ph-type">Neck Angle Check</div>
+            <div class="media-ph-label">Neck angle check — straight edge running from nut to bridge</div>
+            <img src="images/Neckangle.jpg" alt="Neck angle check — straight edge running from nut to bridge" style="width:100%;border-radius:8px;margin:16px 0;">
+            <div class="media-ph-hint">Show correct and incorrect angle. A ruler or steel straight edge resting on the fretboard works well.</div>
+          </div>
+        </div>
+
+        <h3>Inventory of Parts</h3>
+        <p>The bags of screws and small parts can look daunting, but most become self-evident as you build. There's rarely more than one place any part can go. Most model-specific instructions include a labeled parts guide.</p>
+
+        <div class="callout">
+          <div class="callout-title">📋 Test Fit Checklist</div>
+          <ul class="checklist" style="border:none;background:transparent;margin:0">
+            <li><input type="checkbox" id="c3a"><label for="c3a">Neck fits firmly in pocket (correct orientation)</label></li>
+            <li><input type="checkbox" id="c3b"><label for="c3b">String length measurement verified</label></li>
+            <li><input type="checkbox" id="c3c"><label for="c3c">Neck angle checked with straight edge or string</label></li>
+            <li><input type="checkbox" id="c3d"><label for="c3d">All parts inspected for damage</label></li>
+            <li><input type="checkbox" id="c3e"><label for="c3e">Parts inventory reviewed</label></li>
+          </ul>
+        </div>
+      </div>
+      <div class="sec-footer">
+        <button class="btn btn-ghost" onclick="go(2)">← Back</button>
+        <div class="footer-btns">
+          <button class="btn btn-done" id="done-3" onclick="markDone(3)">Mark Complete ✓</button>
+          <button class="btn btn-next" onclick="go(4)">Next →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── SECTION 4: Headstock ─── -->
+    <div class="section" id="sec-4">
+      <div class="sec-head">
+        <div class="sec-badge"><div class="n">4</div><div class="l">Head</div></div>
+        <div><div class="sec-title">Headstock</div><div class="sec-sub">Shape your paddle headstock</div></div>
+      </div>
+      <div class="content">
+        <p>Many guitar kits come with an oversized, unshaped "paddle" headstock — intended to be shaped by you, the builder. Major manufacturers hold trademark protections on their iconic headstock designs. We can't supply templates, but a quick internet search will normally find what you're looking for.</p>
+        <p>Many customers draw their own shape — a great approach. Anyone can buy a name-brand guitar. Make yours unique.</p>
+
+        <div class="callout">
+          <div class="callout-title">⚖ Is It Legal?</div>
+          <p><strong>Can I shape it like a Stratocaster for personal use?</strong> Yes. It's your wood, shape it however you like.</p>
+          <p><strong>Can I put a Fender logo on it and sell it as genuine?</strong> No. That's fraud. Don't do that.</p>
+        </div>
+
+        <h3>Shaping Steps</h3>
+        <div class="tip"><strong>Important:</strong> Before cutting, test fit the tuners in place. Ensure your headstock design won't interfere with how the <strong>back plates</strong> of the tuners mount.</div>
+        <ul class="checklist">
+          <li><input type="checkbox" id="c4a"><label for="c4a">Choose or design your headstock shape</label></li>
+          <li><input type="checkbox" id="c4b"><label for="c4b">Transfer design using heavy cardstock template</label></li>
+          <li><input type="checkbox" id="c4c"><label for="c4c">Test fit tuners to confirm clearance</label></li>
+          <li><input type="checkbox" id="c4d"><label for="c4d">Cut with coping saw, band saw, or jigsaw — keep saw square to the wood</label></li>
+          <li><input type="checkbox" id="c4e"><label for="c4e">Refine fine details with small files</label></li>
+          <li><input type="checkbox" id="c4f"><label for="c4f">Sand rough edges with medium grit sandpaper</label></li>
+        </ul>
+<!-- ═══════════════════════════════════════════════════════
+     🎬 VIDEO — replace this block with a YouTube thumbnail card (see Soldering Basics for an example)
+     Content: Headstock shaping walkthrough
+     ─────────────────────────────────────────────────────
+     PHOTO example:
+       <img src="your-image.jpg" alt="Headstock shaping walkthrough" style="width:100%;border-radius:8px;margin:16px 0;">
+     VIDEO example (YouTube thumbnail card):
+       <a href="https://www.youtube.com/watch?v=Vf4GageeX6I" target="_blank" class="yt-card">
+         <div class="yt-thumb">
+           <img src="https://img.youtube.com/vi/Vf4GageeX6I/hqdefault.jpg" alt="Headstock shaping walkthrough">
+           <div class="yt-play">▶</div>
+         </div>
+         <div class="yt-label">
+           <div class="yt-title">Watch: Headstock shaping walkthrough</div>
+           <div class="yt-sub">Opens on YouTube ↗</div>
+         </div>
+       </a>
+     ═══════════════════════════════════════════════════════ -->
+        
+        <a href="https://www.youtube.com/watch?v=Vf4GageeX6I" target="_blank" class="yt-card">
+          <div class="yt-thumb">
+            <img src="https://img.youtube.com/vi/Vf4GageeX6I/hqdefault.jpg" alt="Headstock shaping walkthrough">
+            <div class="yt-play">▶</div>
+          </div>
+          <div class="yt-label">
+            <div class="yt-title">Watch: Headstock shaping walkthrough</div>
+            <div class="yt-sub">Opens on YouTube ↗</div>
+          </div>
+        </a>
+        
+        
+      </div>
+      <div class="sec-footer">
+        <button class="btn btn-ghost" onclick="go(3)">← Back</button>
+        <div class="footer-btns">
+          <button class="btn btn-done" id="done-4" onclick="markDone(4)">Mark Complete ✓</button>
+          <button class="btn btn-next" onclick="go(5)">Next →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── SECTION 5: Neck & Frets ─── -->
+    <div class="section" id="sec-5">
+      <div class="sec-head">
+        <div class="sec-badge"><div class="n">5</div><div class="l">Neck</div></div>
+        <div><div class="sec-title">Neck & Frets</div><div class="sec-sub">Truss rod and fret leveling</div></div>
+      </div>
+      <div class="content">
+        <p>Nothing determines playability more than a straight neck with level frets. All Vibeworks kits use dual-action truss rods. Necks are straightened at the factory, but humidity, time, and materials can cause movement before your build.</p>
+
+        <h3>Truss Rod Adjustments</h3>
+        <p>The Allen Wrench for the truss rod is included in your kit — usually in the bag with the output cable. Make adjustments slowly: normally ¼ turn at a time. Spread larger adjustments over several days to let the wood settle.</p>
+
+        <div class="truss-row">
+          <div class="truss-card concave">
+            <div class="truss-label">Concave Bend</div>
+            <div class="truss-icon">⬆️</div>
+            <div class="truss-desc">Neck bowing forward toward strings</div>
+            <div class="truss-fix">Turn <strong>clockwise</strong> at headstock to add tension and pull the neck back</div>
+          </div>
+          <div class="truss-card convex">
+            <div class="truss-label">Convex Bend</div>
+            <div class="truss-icon">⬇️</div>
+            <div class="truss-desc">Neck bowing away from strings</div>
+            <div class="truss-fix">Turn <strong>counter-clockwise</strong> at headstock to release tension</div>
+          </div>
+        </div>
+
+<!-- ═══════════════════════════════════════════════════════
+     📸 PHOTO — replace this block with an <img> tag
+     Content: Truss rod nut location
+     ─────────────────────────────────────────────────────
+     PHOTO example:
+       <img src="your-image.jpg" alt="Truss rod nut location" style="width:100%;border-radius:8px;margin:16px 0;">
+     VIDEO example (YouTube thumbnail card):
+       <a href="https://www.youtube.com/watch?v=VIDEO_ID" target="_blank" class="yt-card">
+         <div class="yt-thumb">
+           <img src="https://img.youtube.com/vi/VIDEO_ID/hqdefault.jpg" alt="Truss rod nut location">
+           <div class="yt-play">▶</div>
+         </div>
+         <div class="yt-label">
+           <div class="yt-title">Watch: Truss rod nut location</div>
+           <div class="yt-sub">Opens on YouTube ↗</div>
+         </div>
+       </a>
+     ═══════════════════════════════════════════════════════ -->
+        <div class="media-ph photo">
+     
+                <div class="media-ph-body">
+                    <img src="images/trussrod.jpg" alt="Truss rod nut location" style="width:100%;border-radius:8px;margin:16px 0;">
+                  <div class="media-ph-type">Truss Rod Nut Access</div>
+               
+                  <div class="media-ph-hint">Use the included Allen wrench to adjust the truss rod tension using this access hole.</div>
+                </div>
+        </div>
+
+        <h3>Checking for Level Frets</h3>
+        <p>All frets are leveled, crowned, and polished at the factory — but building and string tension can create high spots. Check with a fret rocker or piece of flat material: place it on three consecutive frets, one at a time. If it rocks, the middle fret is high.</p>
+        <p><strong>Sharpie method:</strong> Color the tops of all frets with a marker, then sand the length of the fretboard lightly with a long sanding block. High frets lose their ink faster.</p>
+<!-- ═══════════════════════════════════════════════════════
+     📸 PHOTO — replace this block with an <img> tag
+     Content: Fret rocker technique
+     ─────────────────────────────────────────────────────
+     PHOTO example:
+       <img src="your-image.jpg" alt="Fret rocker technique" style="width:100%;border-radius:8px;margin:16px 0;">
+     VIDEO example (YouTube thumbnail card):
+       <a href="https://www.youtube.com/watch?v=VIDEO_ID" target="_blank" class="yt-card">
+         <div class="yt-thumb">
+           <img src="https://img.youtube.com/vi/VIDEO_ID/hqdefault.jpg" alt="Fret rocker technique">
+           <div class="yt-play">▶</div>
+         </div>
+         <div class="yt-label">
+           <div class="yt-title">Watch: Fret rocker technique</div>
+           <div class="yt-sub">Opens on YouTube ↗</div>
+         </div>
+       </a>
+     ═══════════════════════════════════════════════════════ -->
+<div class="media-ph photo">
+
+        <div class="media-ph-body">
+            <img src="images/fretrocker.png" alt="Truss rod nut location" style="width:100%;border-radius:8px;margin:16px 0;">
+          <div class="media-ph-type">Fret Rocker</div>
+       
+          <div class="media-ph-hint">Don't have a fret rocker? Any flat item that spans 3 frets (and only 3 frets) will work. Credit cards can do most of the job.</div>
+        </div>
+</div>
+<!-- ═══════════════════════════════════════════════════════
+     🎬 VIDEO — replace this block with a YouTube thumbnail card (see Soldering Basics for an example)
+     Content: Sharpie fret leveling method
+     ─────────────────────────────────────────────────────
+     PHOTO example:
+       <img src="your-image.jpg" alt="Sharpie fret leveling method" style="width:100%;border-radius:8px;margin:16px 0;">
+     VIDEO example (YouTube thumbnail card):
+═══════════════════════════════════════════════════════ -->
+       <a href="https://www.youtube.com/watch?v=pbr0VR2CdQM" target="_blank" class="yt-card">
+         <div class="yt-thumb">
+           <img src="https://img.youtube.com/vi/pbr0VR2CdQM/hqdefault.jpg" alt="Sharpie fret leveling method">
+           <div class="yt-play">▶</div>
+         </div>
+         <div class="yt-label">
+           <div class="yt-title">Watch: Sharpie fret leveling method</div>
+           <div class="yt-sub">Opens on YouTube ↗</div>
+         </div>
+       </a>
+
+
+
+
+
+
+        <div class="tip"><strong>Tip:</strong> Mask the fretboard on each side of any fret you're working on to protect the wood.</div>
+        <p>If a high fret isn't seated properly, a firm tap with a rubber mallet may fix it. If already seated, use a small file to carefully bring it down to height, then re-crown with a crown file.</p>
+      </div>
+      <div class="sec-footer">
+        <button class="btn btn-ghost" onclick="go(4)">← Back</button>
+        <div class="footer-btns">
+          <button class="btn btn-done" id="done-5" onclick="markDone(5)">Mark Complete ✓</button>
+          <button class="btn btn-next" onclick="go(6)">Next →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── SECTION 6: Finish ─── -->
+    <div class="section" id="sec-6">
+      <div class="sec-head">
+        <div class="sec-badge"><div class="n">6</div><div class="l">Finish</div></div>
+        <div><div class="sec-title">Applying a Finish</div><div class="sec-sub">Paint, stain, or oil — it's your call</div></div>
+      </div>
+      <div class="content">
+        <p>We could write a whole book about instrument finishing — and people have. Rather than trying to be the authority, here are some tips. Our official stance: these are not "paint by numbers" projects. We love seeing adventurous, creative choices.</p>
+        <div class="finish-grid">
+          <div class="finish-card"><div class="finish-card-title">Sealers</div><p>Our kits ship as raw wood with no sealer applied. Apply one if you like before your topcoat.</p></div>
+          <div class="finish-card"><div class="finish-card-title">Grain Fillers</div><p>Basswood and Alder have tight grain — filler rarely needed. Mahogany has an open grain — a filler is a good idea.</p></div>
+          <div class="finish-card"><div class="finish-card-title">Materials</div><p>Instrument-grade finishes, hardware-store dyes, gun stock oil — all valid. Use what appeals to you.</p></div>
+          <div class="finish-card"><div class="finish-card-title">Masking</div><p>Mask the binding before applying finish. Bleed-under is normal — remove with alcohol or a razor blade after.</p></div>
+          <div class="finish-card"><div class="finish-card-title">Temperature</div><p>Follow manufacturer instructions. For spray cans, warm the can in hot water first for a smoother, less spatter-prone spray.</p></div>
+          <div class="finish-card"><div class="finish-card-title">Patience</div><p>The gap between a $100 finish and a $5,000 finish is almost always number of coats and prep work between them.</p></div>
+        </div>
+<!-- ═══════════════════════════════════════════════════════
+     📸 PHOTO — replace this block with an <img> tag
+     Content: Masking the binding
+     ─────────────────────────────────────────────────────
+     PHOTO example:
+       <img src="your-image.jpg" alt="Masking the binding" style="width:100%;border-radius:8px;margin:16px 0;">
+     VIDEO example (YouTube thumbnail card):
+       <a href="https://www.youtube.com/watch?v=VIDEO_ID" target="_blank" class="yt-card">
+         <div class="yt-thumb">
+           <img src="https://img.youtube.com/vi/VIDEO_ID/hqdefault.jpg" alt="Masking the binding">
+           <div class="yt-play">▶</div>
+         </div>
+         <div class="yt-label">
+           <div class="yt-title">Watch: Masking the binding</div>
+           <div class="yt-sub">Opens on YouTube ↗</div>
+         </div>
+       </a>
+     ═══════════════════════════════════════════════════════ -->
+<div class="media-ph photo">
+
+        <div class="media-ph-body">
+            <img src="images/binding.jpg" alt="Masking the Binding" style="width:100%;border-radius:8px;margin:16px 0;">
+          <div class="media-ph-type">Masking the Binding</div>
+       
+          <div class="media-ph-hint">Mask the binding prior to applying your finish. Some finish may bleed, requiring scraping with a razor.</div>
+        </div>
+</div>
+
+       <a href="https://www.youtube.com/watch?v=aN6pV0CfNII" target="_blank" class="yt-card">
+         <div class="yt-thumb">
+           <img src="https://img.youtube.com/vi/aN6pV0CfNII/hqdefault.jpg" alt="Applying spray finish">
+           <div class="yt-play">▶</div>
+         </div>
+         <div class="yt-label">
+           <div class="yt-title">Watch: Applying spray finish</div>
+           <div class="yt-sub">Opens on YouTube ↗</div>
+         </div>
+       </a>
+
+
+        <h3>Neck Installation Timing</h3>
+        <p>Install the neck before finishing for a uniform look. Keep them separate if you want a contrasting color on the neck. Either approach is completely valid.</p>
+        <div class="tip"><strong>Resources:</strong> YouTube has step-by-step guides for every finish type imaginable — nitrocellulose lacquer, poly, oil, burst, relic — search for the specific look you want.</div>
+      </div>
+      <div class="sec-footer">
+        <button class="btn btn-ghost" onclick="go(5)">← Back</button>
+        <div class="footer-btns">
+          <button class="btn btn-done" id="done-6" onclick="markDone(6)">Mark Complete ✓</button>
+          <button class="btn btn-next" onclick="go(7)">Next →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── SECTION 7: Securing The Neck ─── -->
+    <div class="section" id="sec-7">
+      <div class="sec-head">
+        <div class="sec-badge"><div class="n">7</div><div class="l">Neck</div></div>
+        <div><div class="sec-title">Securing The Neck</div><div class="sec-sub">Glue-in or bolt-on</div></div>
+      </div>
+      <div class="content">
+        <p>Whether before or after finishing, the installation process is the same. Select your neck joint type below.</p>
+        <div class="tip"><strong>Tip:</strong> When clamping, protect the frets by using a padded clamp or placing a folded cloth between the clamp and the fretboard.</div>
+        <div class="tab-buttons">
+          <button class="tab-btn active" onclick="switchTab('neck','set', this)">Set Neck (Glued)</button>
+          <button class="tab-btn" onclick="switchTab('neck','bolt', this)">Bolt-On Neck</button>
+        </div>
+        <div class="tab-pane active" id="neck-set">
+          <p>First, ensure the fit is correct as outlined in Section 3. Apply wood glue to the 3 mating surfaces of the neck and insert into position with the neck seated fully at the back of the pocket. Use gentle pressure with a padded clamp and allow to dry overnight.</p>
+          <p>Any wood glue works fine — Titebond Original is excellent, but any hardware-store wood glue does the job.</p>
+          <ul class="checklist">
+            <li><input type="checkbox" id="c7a"><label for="c7a">Final dry-fit to confirm neck fit</label></li>
+            <li><input type="checkbox" id="c7b"><label for="c7b">Apply wood glue to all 3 mating surfaces</label></li>
+            <li><input type="checkbox" id="c7c"><label for="c7c">Insert neck fully to the back of pocket</label></li>
+            <li><input type="checkbox" id="c7d"><label for="c7d">Apply padded clamp with gentle pressure</label></li>
+            <li><input type="checkbox" id="c7e"><label for="c7e">Allow to dry overnight before proceeding</label></li>
+          </ul>
+        </div>
+        <div class="tab-pane" id="neck-bolt">
+          <p>Secure the neck to the body using a clamp to ensure a tight fit and keep the screws straight. Use the included neck plate or inserts, and drive the neck screws with a manual screwdriver.</p>
+          <ul class="checklist">
+            <li><input type="checkbox" id="c7f"><label for="c7f">Clamp neck firmly into pocket</label></li>
+            <li><input type="checkbox" id="c7g"><label for="c7g">Position neck plate or inserts</label></li>
+            <li><input type="checkbox" id="c7h"><label for="c7h">Drive neck screws by hand — don't use a power drill</label></li>
+            <li><input type="checkbox" id="c7i"><label for="c7i">Check neck alignment after securing</label></li>
+          </ul>
+        </div>
+      </div>
+      <div class="sec-footer">
+        <button class="btn btn-ghost" onclick="go(6)">← Back</button>
+        <div class="footer-btns">
+          <button class="btn btn-done" id="done-7" onclick="markDone(7)">Mark Complete ✓</button>
+          <button class="btn btn-next" onclick="go(8)">Next →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── SECTION 8: Wiring ─── -->
+    <div class="section" id="sec-8">
+      <div class="sec-head">
+        <div class="sec-badge"><div class="n">8</div><div class="l">Wire</div></div>
+        <div><div class="sec-title">Wiring</div><div class="sec-sub">Electronics, soldering, and your model diagram</div></div>
+      </div>
+      <div class="content">
+
+        <!-- Model selector -->
+        <div class="model-box">
+          <label>Select Your Wiring Configuration</label>
+          <select id="modelSelect" onchange="loadDiagram()">
+            <option value="">— Choose your wiring configuration —</option>
+            <optgroup label="── 1 Pickup ──────────────────">
+              <option value="1p1v1t0w">1 PU · No Switch · 1 Vol · 1 Tone</option>
+              <option value="1p2v1t0w">1 PU · No Switch · 2 Vol · 1 Tone</option>
+              <option value="1p1v1t3wTL">1 PU · 3-Way Switch · 1 Vol · 1 Tone (Telecaster)</option>
+              <option value="1p1v1t3wTL-Complete">1 PU · 3-Way Switch · 1 Vol · 1 Tone (Telecaster — Full Diagram)</option>
+              <option value="1p1v1t3wTL-Photo">1 PU · 3-Way Switch · 1 Vol · 1 Tone (Telecaster — Photo Guide)</option>
+            </optgroup>
+            <optgroup label="── 2 Pickups ─────────────────">
+              <option value="2p2v2t0w">2 PU · No Switch · 2 Vol · 2 Tone</option>
+              <option value="2p2v1t0w">2 PU · No Switch · 2 Vol · 1 Tone</option>
+              <option value="2p3v2t0w">2 PU · No Switch · 2 Vol · Blend · 2 Tone</option>
+              <option value="2p1v1t3w">2 PU · 3-Way Switch · 1 Vol · 1 Tone</option>
+              <option value="2p1v0t3w">2 PU · 3-Way Switch · 1 Vol · No Tone</option>
+              <option value="2p2v1t3w">2 PU · 3-Way Switch · 2 Vol · 1 Tone</option>
+              <option value="2p2v2t3w">2 PU · 3-Way Switch · 2 Vol · 2 Tone</option>
+              <option value="2p3v1t3w">2 PU · 3-Way Switch · 2 Vol · Blend · 1 Tone</option>
+            </optgroup>
+            <optgroup label="── 3 Pickups ─────────────────">
+              <option value="3p1v1t0w">3 PU · No Switch · 1 Vol · 1 Tone</option>
+              <option value="3p1v2t5w">3 PU · 5-Way Switch · 1 Vol · 2 Tone</option>
+              <option value="3p3v1t3w">3 PU · 3-Way Switch · 3 Vol · 1 Tone</option>
+            </optgroup>
+            <optgroup label="── Special ───────────────────">
+              <option value="6st-4st">6-String / 4-String Conversion</option>
+              <option value="hf-bass">Hollow / Semi-Hollow Bass</option>
+            </optgroup>
+          </select>
+          <div class="diagram-area" id="diagramArea">
+            <div style="font-size:36px">🎸</div>
+            <div class="diag-placeholder">Select your wiring configuration above to view the diagram</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <h3>Soldering Basics</h3>
+        <p>If you're new to soldering, don't stress — it's not too complicated. The basics: get the iron to temperature, heat the joint first (not the solder), then flow solder onto the heated joint.</p>
+        <a href="https://www.youtube.com/watch?v=rnLL2lFTwQg" target="_blank" class="yt-card">
+          <div class="yt-thumb">
+            <img src="https://img.youtube.com/vi/rnLL2lFTwQg/hqdefault.jpg" alt="Guitar Soldering Tutorial">
+            <div class="yt-play">▶</div>
+          </div>
+          <div class="yt-label">
+            <div class="yt-title">Watch: Guitar Soldering Tutorial</div>
+            <div class="yt-sub">Opens on YouTube ↗</div>
+          </div>
+        </a>
+
+        <h3>Grounding</h3>
+        <p>All components — pickups, pots, switch, jack — have a ground. All grounds must connect to each other to complete the circuit.</p>
+        <div class="callout">
+          <div class="callout-title">⚡ Ground Continuity</div>
+          <p>If the pickup connects directly to a volume pot, the bare (ground) wire connects to the back of the pot. A wire then runs from the back of that pot to the output jack sleeve. This ensures the ground runs continuously from pickup to output.</p>
+          <p><strong>Bridge Ground:</strong> A commonly missed ground — a wire runs from a grounding point (back of a pot) to the bridge. This makes the bridge part of the ground circuit and is essential for quiet electronics.</p>
+        </div>
+
+
+  
+    
+        <div class="media-ph photo">
+
+          <div class="media-ph-body">
+              <img src="images/ground.jpg" alt="Bridge ground wire exit point" style="width:100%;border-radius:8px;margin:16px 0;">
+            <div class="media-ph-label">Bridge ground wire exit point</div>
+            <div class="media-ph-hint">Show the wire emerging under the bridge saddle area (Tele/Strat) or through a bridge post cavity (LP). This is the most commonly missed ground connection.</div>
+          </div>
+        </div>
+
+        <h3>Pot Types</h3>
+        <p>Each pot is marked <strong>A500k</strong> or <strong>B500k</strong>. A-pots have a logarithmic sweep and feel more natural for Volume. B-pots have a linear sweep and are typically used for Tone. Either can work in either position — the feel of the sweep will just differ slightly.</p>
+
+        <h3>Pickup Positions</h3>
+        <p>If your pickups mount in rings (LP-style), the taller ring is for the bridge, the shorter ring for the neck. Wiring colors are not standardized across manufacturers — refer to your diagram, not the colors.</p>
+
+        <h3>Testing Before Stringing</h3>
+        <p>Plug the guitar in, turn up the volume, and tap the pickup pole pieces with a screwdriver. You should hear an audible thump through the amp. No sound? Check that volume pots are turned up, then recheck your connections.</p>
+
+        <h3>Hollow Body Wiring</h3>
+        <p>No control access plate on hollow and semi-hollow guitars means all soldering happens outside the body. Do all your soldering first, then use a piece of string or dental floss fed through the mounting hole and out the f-hole to pull each component into position. Secure with the mounting nut.</p>
+
+        <h3>Output Jacks</h3>
+        <p>Two types are used: Mono and Stereo. Hot (from the switch or Volume pot) connects to the tip lug. Ground connects to the sleeve lug. On Stereo jacks, the third lug is unused in standard mono configurations.</p>
+        <div class="jack-pair">
+          <div class="jack-card">
+            <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAQDAwMDAgQDAwMEBAQFBgoGBgUFBgwICQcKDgwPDg4MDQ0PERYTDxAVEQ0NExoTFRcYGRkZDxIbHRsYHRYYGRj/2wBDAQQEBAYFBgsGBgsYEA0QGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBj/wAARCAD6AR0DASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD7+ooooAKKKKACiiigAooooAKKKKACiiigArO1DTrDUbJ7S/tILq3baXhmj8xW2tuX5f8AerRooA5vTfBnhDRNZn1fRfC+iafqNx/x8XtlYwwzTZ+Y73VdzfN81Nv/AAR4M1fxFD4g1bwhoV7q1v8A6u/ubCOWeP8Au7ZGXdXTUUAZa6Vpv9pT6gun2n2q5jWCa4Ea+ZNGpbarN/EvzN8v+01ZujeB/Bnhq+n1Hw54T0PSby4XE1xY6fHBJN/vMq7mrpqKAMuHTtOt9Rnv4rGCO8uEjjmuFRfMkVd23c38X3m/76aq/wDwjugDT4dJ/sPT/sEMizx2pt18qORW3Kyrt27t3zbvvVuUUANVdo206iigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAoory/49eIta8K/s9+JNb0GR4r6G38uO4X71tuby2m/4Crbv+A0AegjVtK/tH7D/AGnafaf+eHnLv/75q9ketfNni74X/Cnwf4Bs5/8AhEPEOrXU0P8AyH9JaS5u42Vd3nNIrf73zVQT4weLjpHiTxLpmsRy6B4b0rTbq3W5tttxqLXFpC375m+ZfmlVv+BUAfUWaM183+MvHXxM+GPg7RfFuq69pus22sW80TWi2fl/ZLj7FNcwtHt+8v7llbd/s1reI/iv4n0z4c/DbWrZbT7V4guFjvt0e75fs0kn3f8AeWgD3lm+WoJriC2j8yeRI13bdzNtr5t0z4lfEq18C/D7x9rGs6bd2fiSe3gutMitfLWJZfussi/Nu+aub8Z6/wDEDx3+zTY/EabXLS20vVNWhlj0VbdVa3t/tO1f3q/N5m1VZv8AgVAH1797ay06o4/ufM26pKACiimtQAopK434h/ELw38OfCb694juxFBuWOKNP9ZNI33VjqvpfizUtS0a11WSzW2W4XzPI/iX/erOVTlKjE7yis7TdSivoFKt+8/iWtGnGVyQoooqwCiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACs/U9LstY0i40rU7WK7srmNoJoJl3LJGy7WVq0KKAPFG/Z48OLatpkHjDxpBobNu/smPVP3Cr/dX5dyr/sq1dLpvwo8HaZDrljBp26w1e3t7Seydt0aRwwrCqr/ABfdjX/gS16NRQB5FafBHw4L2yXW9W13xFaWMM1tYWOrXCtDaJJG0bbVRVZm8tmVWZtyr92qkX7PvhtV0VLjxF4mvrfQ5Gk0u2ubpWit1ZGj2/Kq7vlb+Jq9nb7prB8SWOp6n4U1Gw0XVf7I1KaGSO3vhHu+zSMvytt/i+b5qAOYj+FHhqPwN4V8JtJc/YPDE1vNabpF+byfu+ZXO6h+z54UvoG0w614gg0T7d/aUOjR3CrbwXHmNJuVdu7azFvlrO+Hfxb1/TfGcfws+M1vHpfi4f8AHjqUa7bXWl/vRt93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L67sY/O/d/Z5LvzlXcv3VZaAPTLf4geCrrSZdUtfF2jS2MLeXJcreRtHG23d8zbv7tRSeNtIi8ZaHoKyM/8AbUM0ljdxlWhlaNd3lqy/7O5v+A143N8NfFnibxbZ61deDNP8P2MLWMM2kx3Cyrd+TIzee3y7fl+6v8W2Rq9R+Ifhi41fwtZXeh2sL6zoV5FqWnRxny90kLZaJf8AZkXdG3+9QBLJ8UPCdv4i1fTNU1C20yLTZo4JL6+mWGGSZl3eXGzfeZd1aOkeN9F1jxHqmiwTKs1ncRwxtuXbc7raO4Vo/wC98si15FD8PfGOhz6P4mufDVj4t1K4sZl1SwkuFVY7yaRpGmjZl+7823/drA8C/Cj4i/DuKHUv7LttYmtdakvVtI7zylWGa3hXbG392Py2j+b+FaAPfrvx/wCDLOTZd+LdEtf3nl/v7yOP5v7vzfxU+Hxv4Qlgvp4fFGjypYLuunS8j/cL/wBNG3V88+Efgv4zjv8AxRfeI/DmntNqGi6pbWqyTLJtmuJmZV+7/u/NV/xR8FPE95pGlxaFZRW32XSbWK4jtpvIkuJIbuGbbu/3Y220Ae3XHj3w/wDYtM1Cw1GDUNN1G4+yQ6haSLJCs38Ksy/3m+WrGkanpHjPw7JL9k+VZpLS4tp/vRSRsysrf7rK1eHW/g3U/Dfw11LTrzTru21bxFqlv9ntrm6W5ZWX70nyqu1V+9XqPwsjlmvPGWtK/wDoOpa9JLZ7v7scccLN/wACaNm/4FU8oGX4s+GDMk13obMzfe8vd8y15JfSav4dupL6zZtPvofljZl+7X1ttrA1/wAKaP4gt2W+th538Myr81TKJp7Q+VPFXx8+I1nozW0GpWkDbfmn8la898E/8JV4y8UNeN593JM264vZ1/8AQm/9lr6Y8Rfs56Hr2qR3klzGqx/8s1Xarf722vQ/D3gPRtDtbeNIFk8ldsa+XtWP/gNL3pe6XHlOC8JfDi+lt1e8laKH5fm27d3+6tet6ToWn6PAsdnAqtt+aT+Jq0VjVdu3+GpKuMeUylLmG7adRRVEhRRRQAUUUUAFFFFABRRRQAUUUUAFVo7WCFpGiiWPzG+bav3qs0UAN8taPLWnUUAR+WlO8tadRQA3y1pvlpUlFAEflpR5aVJRQA3y1o8tadRQA3y1pvlpUlFADGjVk20nlp/3zUlFAFZrW2lZWlhjkZfusy06CGO3hWKBFWNV+VVG2p6KACiiigBu2jbTqKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA//2Q==" alt="Mono output jack">
+            <div class="jack-card-lbl">Mono Jack — Hot to tip, Ground to sleeve</div>
+          </div>
+          <div class="jack-card">
+            <img src="data:image/jpeg;base64,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95YV3UFHxp8Ef2Qb7Ury11zx7vttPVvNj09v+Wn+9X3Hpejafoukw6ZpttHBawqqrGq1dCruVdm1VqbNTyk8xk6todnrFlJb3i7lb+KvMdQ8J/8ACO37brVZ7ORv9Yq/dr2D+Kori3iuIminiWRW7NWFWhGoVGR41feFbHULXz9P/wBZ975fvLV7wz44vNDvF0PXN08K/Ksv8S1tapotz4dvVvtMia5s2+9B/drgfEVw3iLxNarZ2zW1193a3/LSuL2Xs/ej8Rr8R73bzRXVtHcRNuVl3LUu3NUNFt2tNBtbaT76xrurRXpXp0pSlH3jCQbadRRVgFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQBDMqtF8ybv9mvCPjP4e1Dw5q2mfFHwvvabSpNt5abtyyQ/e+Vf+BV72y7lqpd2Ftf6dNY3caywzKyMrfxK1TygZfhjxDY+KvCljr+nSK1vdRrIv8A8T/31W+nSvnTwJdXXwg+NF18O9VeT+wdYka50mdv4Wb+Hd/wGvoiNlMSsi/K1UBLRTd1OoAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA80+MPgH/hOPAcy2O6PWrH/SdPmjX5vMX5tv8AwKo/g54+/wCE28ELBfHy9b01vs15A33lZfl3ba9Jk/3tteRH4dazoX7Q9r4x8L+RDpupKy6tbfw7v73+9QB6+n3jUlRp941JQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQBH5f+1WRe6qLbxBpuniDd9s8z5t3+r2qrf+zVt9q5/xDoJ1dLaS2vpLC7tnaSG4jXcy7vvUAYX/AAsPTLPzk1C2u0aOZod0EbSqu1V+Ztv3VrS1Lx34e0nTBfXUsnlNHNKvlpu3LGqs3/jrLVaPwHZx6Deaa15O0l5C0M07Kvzbv9mqknw68y6adtbudqxyR2sTQqyw+Yq7vl/4DQBd/wCFh+HQ1ijfbE+2Lu+a3ZfJX1l/55rT9N8bWOreLI9Hs7S82tHJJ588bRK23b93d9771ZUfwzt4r63ujrF3JJ/y+fL/AMff/wAT/wABrU0fwidJ1mG7OqTzxW0DW1rbSRqqwxsy/wAS/N/CtAHXK1OqNPvGpKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA//2Q==" alt="Stereo output jack">
+            <div class="jack-card-lbl">Stereo Jack — Hot to tip, Ground to sleeve, third lug unused</div>
+          </div>
+        </div>
+      </div>
+      <div class="sec-footer">
+        <button class="btn btn-ghost" onclick="go(7)">← Back</button>
+        <div class="footer-btns">
+          <button class="btn btn-done" id="done-8" onclick="markDone(8)">Mark Complete ✓</button>
+          <button class="btn btn-next" onclick="go(9)">Next →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── SECTION 9: Final Assembly ─── -->
+    <div class="section" id="sec-9">
+      <div class="sec-head">
+        <div class="sec-badge"><div class="n">9</div><div class="l">Build</div></div>
+        <div><div class="sec-title">Final Assembly & Setup</div><div class="sec-sub">Bring it all together</div></div>
+      </div>
+      <div class="content">
+        <p>With the neck secured and wiring complete, you're ready for final assembly.</p>
+
+        <h3>Assembly Checklist</h3>
+        <ul class="checklist">
+          <li><input type="checkbox" id="c9a"><label for="c9a">Install tuners using hand tools and firm pressure</label></li>
+          <li><input type="checkbox" id="c9b"><label for="c9b">Install string retainers (if equipped)</label></li>
+          <li><input type="checkbox" id="c9c"><label for="c9c">Attach strap buttons</label></li>
+          <li><input type="checkbox" id="c9d"><label for="c9d">Secure bridge and tailpiece (if equipped)</label></li>
+          <li><input type="checkbox" id="c9e"><label for="c9e">Install knobs</label></li>
+          <li><input type="checkbox" id="c9f"><label for="c9f">Install strings</label></li>
+        </ul>
+
+        <div class="divider"></div>
+        <h3>Guitar Setup — Do In Order</h3>
+        <p>Each setup step depends on the one before it. Do not skip ahead.</p>
+
+        <div class="setup-steps">
+          <div class="setup-step">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>Straighten the neck</strong>
+              <p>Use the truss rod as described in Section 5. If the neck isn't straight, string height and intonation adjustments will be impossible to complete accurately.</p>
+            </div>
+          </div>
+          <div class="setup-step">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>Set string height (action)</strong>
+              <p>Measure the gap between the fretboard and strings at the 12th fret. Target: ~5/64" for bass strings, ~4/64" for treble. Adjust by raising or lowering the bridge saddles.</p>
+            </div>
+          </div>
+<!-- ═══════════════════════════════════════════════════════
+     📸 PHOTO — replace this block with an <img> tag
+     Content: String height measurement
+     ─────────────────────────────────────────────────────
+     PHOTO example:
+       <img src="your-image.jpg" alt="String height measurement" style="width:100%;border-radius:8px;margin:16px 0;">
+     VIDEO example (YouTube thumbnail card):
+       <a href="https://www.youtube.com/watch?v=VIDEO_ID" target="_blank" class="yt-card">
+         <div class="yt-thumb">
+           <img src="https://img.youtube.com/vi/VIDEO_ID/hqdefault.jpg" alt="String height measurement">
+           <div class="yt-play">▶</div>
+         </div>
+         <div class="yt-label">
+           <div class="yt-title">Watch: String height measurement</div>
+           <div class="yt-sub">Opens on YouTube ↗</div>
+         </div>
+       </a>
+     ═══════════════════════════════════════════════════════ -->
+        <div class="media-ph photo">
+
+          <div class="media-ph-body">
+              <img src="images/string.jpg" alt="String height measurement" style="width:100%;border-radius:8px;margin:16px 0;">
+            <div class="media-ph-label">String height measurement</div>
+            <div class="media-ph-hint">Ruler or feeler gauge at the 12th fret showing the gap between fretboard and string bottom.</div>
+          </div>
+        </div>
+
+          <div class="setup-step">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>Set intonation</strong>
+              <p>Tune the open string to pitch, then play the 12th fret and check the tuner. If the two notes match — you're done with that string. Repeat for all strings.</p>
+              <div class="intonation-row">
+                <div class="intonation-card sharp">
+                  <strong>12th fret is Sharp</strong>
+                  Move saddle toward the back — this lengthens the string and lowers the pitch
+                </div>
+                <div class="intonation-card flat">
+                  <strong>12th fret is Flat</strong>
+                  Move saddle toward the front — this shortens the string and raises the pitch
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+       <a href="https://www.youtube.com/watch?v=IFoF_aH61zI" target="_blank" class="yt-card">
+         <div class="yt-thumb">
+           <img src="https://img.youtube.com/vi/IFoF_aH61zI/hqdefault.jpg" alt="Setting intonation">
+           <div class="yt-play">▶</div>
+         </div>
+         <div class="yt-label">
+           <div class="yt-title">Watch: Setting intonation</div>
+           <div class="yt-sub">Opens on YouTube ↗</div>
+         </div>
+       </a>
+    
+        <div class="tip"><strong>Tip:</strong> Changing string gauge or adjusting the truss rod or action means you'll need to redo intonation — string thickness and height both affect it.</div>
+      </div>
+      <div class="sec-footer">
+        <button class="btn btn-ghost" onclick="go(8)">← Back</button>
+        <div class="footer-btns">
+          <button class="btn btn-done" id="done-9" onclick="markDone(9)">Mark Complete ✓</button>
+          <button class="btn btn-next" onclick="go(10)">Next →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── SECTION 10: Debug ─── -->
+    <div class="section" id="sec-10">
+      <div class="sec-head">
+        <div class="sec-badge" style="background:#b91c1c"><div class="n" style="font-size:22px">🔧</div><div class="l">Debug</div></div>
+        <div><div class="sec-title">Wiring Debug Guide</div><div class="sec-sub">Interactive troubleshooter for sound issues</div></div>
+      </div>
+      <div class="content">
+        <p>Experiencing a sound issue? Select your symptom below and follow the interactive guide.</p>
+        <div class="issue-row">
+          <button class="issue-btn" onclick="startDebug('nosound', this)">🔇 No Sound</button>
+          <button class="issue-btn" onclick="startDebug('onepickup', this)">🎚 One Pickup Dead</button>
+          <button class="issue-btn" onclick="startDebug('hum', this)">〜 Hum / Noise</button>
+        </div>
+        <div id="debugFlow"></div>
+      </div>
+      <div class="sec-footer">
+        <button class="btn btn-ghost" onclick="go(9)">← Back</button>
+        <div class="footer-btns">
+          <button class="btn btn-done" id="done-10" onclick="markDone(10)">Mark Complete ✓</button>
+          <button class="btn btn-next" onclick="go(11)">Next →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── SECTION 11: Congratulations ─── -->
+    <div class="section" id="sec-11">
+      <div class="sec-head">
+        <div class="sec-badge" style="background:var(--green)"><div class="n" style="font-size:22px">✓</div><div class="l">Done</div></div>
+        <div><div class="sec-title">Congratulations!</div><div class="sec-sub">Your build is complete</div></div>
+      </div>
+      <div class="congrats-wrap">
+        <div class="congrats-title">Congratulations! 🎸</div>
+        <p class="congrats-sub">Your build is complete. We'd love to see what you've created and share it with our community.</p>
+        <a href="https://vibeworksguitars.com/gallery" target="_blank" class="congrats-link">Submit Your Build →</a>
+        <div class="congrats-summary" id="completeSummary">
+          <div class="progress-badge" id="summaryCount">—</div>
+          <div id="summaryText" style="margin-top:6px;color:#888;font-size:14px">Complete sections to see your progress here.</div>
+        </div>
+      </div>
+      <div class="sec-footer">
+        <button class="btn btn-ghost" onclick="go(10)">← Back</button>
+        <div></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  // ─── Config ────────────────────────────────────────────────
+  const SECTIONS = [
+    { id:1,  label:'Introduction',       short:'Intro' },
+    { id:2,  label:'Before Starting',    short:'Prep' },
+    { id:3,  label:'Test Fit',           short:'Test Fit' },
+    { id:4,  label:'Headstock',          short:'Headstock' },
+    { id:5,  label:'Neck & Frets',       short:'Neck' },
+    { id:6,  label:'Applying a Finish',  short:'Finish' },
+    { id:7,  label:'Securing The Neck',  short:'Neck Install' },
+    { id:8,  label:'Wiring',             short:'Wiring' },
+    { id:9,  label:'Final Assembly',     short:'Assembly' },
+    { id:10, label:'Debug Guide',        short:'Debug', special:true },
+    { id:11, label:'Complete!',          short:'Done', special:true },
+  ];
+
+  let current = 1;
+  let done = new Set();
+
+  // ─── Sidebar ───────────────────────────────────────────────
+  function buildSidebar() {
+    const sb = document.getElementById('sidebar');
+    sb.innerHTML = '<div class="sidebar-label">Build Steps</div>';
+    SECTIONS.forEach((s, i) => {
+      if (s.id === 10) {
+        const div = document.createElement('div');
+        div.className = 'sidebar-divider';
+        sb.appendChild(div);
+        const lbl = document.createElement('div');
+        lbl.className = 'sidebar-label';
+        lbl.textContent = 'Resources';
+        sb.appendChild(lbl);
+      }
+      const item = document.createElement('div');
+      item.className = 'nav-item' + (s.id === current ? ' active' : '') + (done.has(s.id) ? ' done' : '');
+      item.onclick = () => go(s.id);
+      const numTxt = s.id === 10 ? '🔧' : s.id === 11 ? '✓' : s.id;
+      item.innerHTML = `<div class="nav-num">${numTxt}</div><span class="nav-lbl">${s.label}</span>${done.has(s.id) ? '<span class="nav-ck">✓</span>' : ''}`;
+      sb.appendChild(item);
+    });
+  }
+
+  function go(n) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById('sec-' + n).classList.add('active');
+    current = n;
+    buildSidebar();
+    updateProgress();
+    window.scrollTo(0, 0);
+    if (n === 11) updateSummary();
+  }
+
+  function markDone(n) {
+    done.add(n);
+    const btn = document.getElementById('done-' + n);
+    if (btn) { btn.textContent = '✓ Completed'; btn.className = 'btn btn-done-state'; btn.disabled = true; }
+    buildSidebar();
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const pct = (done.size / (SECTIONS.length - 1)) * 100;
+    document.getElementById('progFill').style.width = pct + '%';
+  }
+
+  function updateSummary() {
+    document.getElementById('summaryCount').textContent = done.size + ' / ' + (SECTIONS.length - 1);
+    document.getElementById('summaryText').textContent = done.size === SECTIONS.length - 1
+      ? 'All sections complete — time to plug in and play! 🎸'
+      : 'sections completed. Keep going — you\'re almost there!';
+  }
+
+  // ─── Tabs ──────────────────────────────────────────────────
+  function switchTab(group, tab, btn) {
+    document.querySelectorAll(`[onclick^="switchTab('${group}'"]`).forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll(`[id^="${group}-"]`).forEach(p => p.classList.remove('active'));
+    document.getElementById(`${group}-${tab}`).classList.add('active');
+  }
+
+  // ─── Wiring diagrams ───────────────────────────────────────
+  // pdfFile: filename of the PDF (must be in the same folder as this HTML file)
+  const DIAGRAMS = {
+    // ── 1 Pickup ──
+    '1p1v1t0w':           { title:'1 Pickup — No Switch',                        desc:'1 pickup · 1 volume · 1 tone · no switch',                        note:'Simple single-pickup wiring. All grounds must connect to complete the circuit.',                                             pdfFile:'VWG Wiring Diagram 1p1v1t0w.pdf' },
+    '1p2v1t0w':           { title:'1 Pickup — No Switch (2 Vol)',                 desc:'1 pickup · 2 volume pots · 1 tone · no switch',                   note:'Stereo or split-output configuration. Wire colors vary between kits.',                                                    pdfFile:'VWG Wiring Diagram 1p2v1t0w.pdf' },
+    '1p1v1t3wTL':         { title:'1 Pickup — 3-Way Switch (Telecaster)',         desc:'1 pickup · 1 volume · 1 tone · 3-way switch · Telecaster style',  note:'Standard Telecaster-style wiring diagram.',                                                                              pdfFile:'VWG Wiring Diagram 1p1v1t3wTL.pdf' },
+    '1p1v1t3wTL-Complete':{ title:'1 Pickup — 3-Way Switch (Telecaster, Full)',   desc:'1 pickup · 1 volume · 1 tone · 3-way switch · complete diagram',  note:'Full annotated Telecaster wiring diagram with all component details shown.',                                              pdfFile:'VWG Wiring Diagram 1p1v1t3wTL-Complete.pdf' },
+    '1p1v1t3wTL-Photo':   { title:'1 Pickup — 3-Way Switch (Telecaster, Photos)', desc:'1 pickup · 1 volume · 1 tone · 3-way switch · photo reference',   note:'Photo-based wiring guide for Telecaster configuration — useful for visual reference alongside the standard diagram.',    pdfFile:'VWG Wiring Diagram 1p1v1t3wTL-Photo.pdf' },
+    // ── 2 Pickups ──
+    '2p2v2t0w':           { title:'2 Pickups — No Switch',                        desc:'2 pickups · 2 volume pots · 2 tone pots · no switch',             note:'Wire colors are representational only — actual colors vary between kits. All grounds must connect to complete the circuit.', pdfFile:'VWG Wiring Diagram 2p2v2t0w.pdf' },
+    '2p2v1t0w':           { title:'2 Pickups — No Switch (1 Tone)',               desc:'2 pickups · 2 volume pots · 1 tone pot · no switch',              note:'Wire colors vary between kits. All grounds must connect to complete the circuit.',                                         pdfFile:'VWG Wiring Diagram 2p2v1t0w.pdf' },
+    '2p3v2t0w':           { title:'2 Pickups — No Switch (Vol · Blend · Tone)',   desc:'2 pickups · 2 volume pots · blend pot · 2 tone pots · no switch', note:'Features a blend pot for mixing pickup levels. Wire colors vary between kits.',                                          pdfFile:'VWG Wiring Diagram 2p3v2t0w.pdf' },
+    '2p1v1t3w':           { title:'2 Pickups — 3-Way Switch',                     desc:'2 pickups · 1 volume · 1 tone · 3-way switch',                   note:'Classic LP-style wiring. Switch positions: neck, both, bridge.',                                                         pdfFile:'VWG Wiring Diagram 2p1v1t3w.pdf' },
+    '2p1v0t3w':           { title:'2 Pickups — 3-Way Switch (No Tone)',           desc:'2 pickups · 1 volume · no tone pot · 3-way switch',              note:'Simplified wiring — volume and switch only. Wire colors vary between kits.',                                               pdfFile:'VWG Wiring Diagram 2p1v0t3w.pdf' },
+    '2p2v1t3w':           { title:'2 Pickups — 3-Way Switch (2 Vol)',             desc:'2 pickups · 2 volume pots · 1 tone pot · 3-way switch',           note:'Independent volume per pickup plus a shared tone control.',                                                              pdfFile:'VWG Wiring Diagram 2p2v1t3w.pdf' },
+    '2p2v2t3w':           { title:'2 Pickups — 3-Way Switch (2 Vol · 2 Tone)',    desc:'2 pickups · 2 volume pots · 2 tone pots · 3-way switch',          note:'Full independent controls per pickup plus a 3-way selector.',                                                           pdfFile:'VWG Wiring Diagram 2p2v2t3w.pdf' },
+    '2p3v1t3w':           { title:'2 Pickups — 3-Way Switch (Vol · Blend · Tone)',desc:'2 pickups · 2 volume pots · blend pot · 1 tone pot · 3-way switch',note:'Features a blend pot for mixing pickup levels alongside a 3-way switch.',                                             pdfFile:'VWG Wiring Diagram 2p3v1t3w.pdf' },
+    // ── 3 Pickups ──
+    '3p1v1t0w':           { title:'3 Pickups — No Switch',                        desc:'3 pickups · 1 volume · 1 tone · no switch',                      note:'All pickups run in parallel to a single volume and tone. Wire colors vary between kits.',                                pdfFile:'VWG Wiring Diagram 3p1v1t0w.pdf' },
+    '3p1v2t5w':           { title:'3 Pickups — 5-Way Switch',                     desc:'3 pickups · 1 volume · 2 tone pots · 5-way switch',              note:'Standard Stratocaster-style wiring with neck, middle, and bridge pickups.',                                              pdfFile:'VWG Wiring Diagram 3p1v2t5w.pdf' },
+    '3p3v1t3w':           { title:'3 Pickups — 3-Way Switch (3 Vol)',             desc:'3 pickups · 3 volume pots · 1 tone pot · 3-way switch',           note:'Independent volume per pickup. Wire colors vary between kits.',                                                          pdfFile:'VWG Wiring Diagram 3p3v1t3w.pdf' },
+    // ── Special ──
+    '6st-4st':            { title:'6-String / 4-String Conversion',               desc:'Special configuration — 6-string to 4-string wiring',            note:'Refer to this diagram for 6-string or 4-string conversion wiring specifics.',                                            pdfFile:'VWG Wiring Diagram 6st-4st.pdf' },
+    'hf-bass':            { title:'Hollow / Semi-Hollow Bass',                    desc:'Special configuration — hollow and semi-hollow body bass',        note:'All soldering is done outside the body. Use dental floss or string through the f-hole to pull components into position.', pdfFile:'VWG Wiring Diagram HF Bass.pdf' },
+  };
+
+  function loadDiagram() {
+    const val = document.getElementById('modelSelect').value;
+    const area = document.getElementById('diagramArea');
+    if (!val) {
+      area.style.minHeight = '160px';
+      area.innerHTML = '<div style="font-size:36px">🎸</div><div class="diag-placeholder">Select your wiring configuration above to view the diagram</div>';
+      return;
+    }
+    const d = DIAGRAMS[val];
+    if (d.pdfFile) {
+      area.style.minHeight = '0';
+      area.innerHTML = `
+        <div class="diag-title" style="text-align:left;width:100%">${d.title}</div>
+        <div class="diag-desc" style="text-align:left;width:100%;margin-bottom:6px">${d.desc}</div>
+        <div class="diag-pdf-wrap"><iframe src="${d.pdfFile}" title="${d.title} Wiring Diagram"></iframe></div>
+        <div style="width:100%;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:8px">
+          <div class="diag-note" style="flex:1;margin:0">📌 <strong>Note:</strong> ${d.note}</div>
+          <a href="${d.pdfFile}" target="_blank" class="diag-open-btn">↗ Open PDF</a>
+        </div>
+      `;
+    } else {
+      area.innerHTML = `
+        <div class="diag-title">${d.title}</div>
+        <div class="diag-desc">${d.desc}</div>
+        <div class="diag-placeholder-box">
+          <div style="font-size:28px;margin-bottom:8px">📄</div>
+          <div style="font-weight:600;color:#333;margin-bottom:6px">${d.title}</div>
+          <div style="font-size:13px;color:#999">Upload the PDF for this configuration to display it here</div>
+        </div>
+        <div class="diag-note">📌 <strong>Note:</strong> ${d.note}</div>
+      `;
+    }
+  }
+
+  // ─── Debug flowchart ───────────────────────────────────────
+  const FLOWS = {
+    nosound: [
+      { id:'s0', q:'First, ensure the volume is turned up on both the guitar and amp. Do you have sound now?', yes:'resolved_vol', no:'s1' },
+      { id:'resolved_vol', result:'✅ Problem solved! The volume was turned down.', type:'success' },
+      { id:'s1', q:'Bypass the pots and switch by connecting the pickup hot wire directly to the jack tip. Do you have sound now?', yes:'s2', no:'s3' },
+      { id:'s2', result:'🔧 The pots or switch are the issue. Reintroduce them one at a time to find the faulty component, then replace it.', type:'action' },
+      { id:'s3', result:'🔧 Check the jack wiring. The hot and ground connections at the jack may be reversed, cold-soldered, or broken.', type:'action' },
+    ],
+    onepickup: [
+      { id:'s0', q:'Check the wiring from the problematic pickup to the switch or pot. Does that pickup have sound now?', yes:'resolved_wiring', no:'s1' },
+      { id:'resolved_wiring', result:'✅ Problem solved! The wiring connection from the pickup was loose or broken.', type:'success' },
+      { id:'s1', q:'Swap the pickup positions on the switch (plug the dead pickup into the working switch position). Is the same pickup still dead?', yes:'s2', no:'s3' },
+      { id:'s2', result:'🔧 The pickup itself is faulty — the fault followed the pickup, not the switch position. Replace the pickup.', type:'action' },
+      { id:'s3', result:'🔧 The fault stayed at the switch position. Check the wiring after the switch, or replace the switch.', type:'action' },
+    ],
+    hum: [
+      { id:'s0', q:'Is there only hum with no guitar signal at all (no sound when you pluck strings)?', yes:'s1a', no:'s1b' },
+      { id:'s1a', q:'Check and reflow the pickup ground wire connection. Is the hum gone?', yes:'resolved_puground', no:'s2a' },
+      { id:'resolved_puground', result:'✅ Problem solved! The pickup ground wire was the issue.', type:'success' },
+      { id:'s2a', result:'🔧 Check the jack ground connection — ensure the sleeve lug of the jack is properly soldered to the ground circuit.', type:'action' },
+      { id:'s1b', q:'Check the bridge ground wire (runs from a pot back to the bridge contact point). Is the hum reduced?', yes:'resolved_bridge', no:'s2b' },
+      { id:'resolved_bridge', result:'✅ Problem solved! The bridge ground wire was missing or had a broken connection.', type:'success' },
+      { id:'s2b', q:'Check that the switch is grounded to the pots, and that all pots are grounded to each other. Still noisy?', yes:'s3b', no:'resolved_grounds' },
+      { id:'s3b', result:'🔧 All grounds check out but still noisy — the pots themselves may be faulty. Try replacing them.', type:'action' },
+      { id:'resolved_grounds', result:'✅ Problem solved! The grounding connections between pots and switch were incomplete.', type:'success' },
+    ],
+  };
+
+  let debugState = { flowKey: null, current: null, history: [] };
+
+  function startDebug(key, btn) {
+    document.querySelectorAll('.issue-btn').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+    debugState = { flowKey: key, current: 's0', history: [] };
+    renderDebug();
+  }
+
+  function renderDebug() {
+    const container = document.getElementById('debugFlow');
+    container.innerHTML = '';
+    if (!debugState.flowKey) return;
+
+    const flow = FLOWS[debugState.flowKey];
+
+    // History
+    debugState.history.forEach(h => {
+      const node = flow.find(n => n.id === h.id);
+      if (!node || !node.q) return;
+      const div = document.createElement('div');
+      div.className = 'flow-step past';
+      div.innerHTML = `<div class="flow-q">${node.q}</div><div class="flow-past-answer">You answered: <strong>${h.answer}</strong></div>`;
+      container.appendChild(div);
+    });
+
+    const node = flow.find(n => n.id === debugState.current);
+    if (!node) return;
+
+    if (node.result) {
+      const res = document.createElement('div');
+      res.className = 'flow-result ' + (node.type || 'action');
+      res.innerHTML = node.type === 'action' ? `<span>🔧</span><div>${node.result}</div>` : node.result;
+      container.appendChild(res);
+      const restart = document.createElement('button');
+      restart.className = 'flow-restart';
+      restart.textContent = '↩ Start Over';
+      restart.onclick = () => {
+        debugState = { flowKey: null, current: null, history: [] };
+        document.getElementById('debugFlow').innerHTML = '';
+        document.querySelectorAll('.issue-btn').forEach(b => b.classList.remove('sel'));
+      };
+      container.appendChild(restart);
+    } else {
+      const step = document.createElement('div');
+      step.className = 'flow-step';
+      step.innerHTML = `
+        <div class="flow-q">${node.q}</div>
+        <div class="flow-ans-row">
+          <button class="flow-ans yes" onclick="debugAnswer('yes')">✓ Yes</button>
+          <button class="flow-ans no" onclick="debugAnswer('no')">✕ No</button>
+        </div>`;
+      container.appendChild(step);
+    }
+  }
+
+  function debugAnswer(answer) {
+    const node = FLOWS[debugState.flowKey].find(n => n.id === debugState.current);
+    debugState.history.push({ id: debugState.current, answer: answer === 'yes' ? 'Yes' : 'No' });
+    debugState.current = answer === 'yes' ? node.yes : node.no;
+    renderDebug();
+  }
+
+  // ─── Init ──────────────────────────────────────────────────
+  buildSidebar();
+</script>
+</body>
+</html>
