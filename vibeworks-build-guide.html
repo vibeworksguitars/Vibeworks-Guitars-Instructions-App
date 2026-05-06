@@ -22,6 +22,9 @@
     .top-bar { background: var(--dark); color: white; padding: 0 24px; height: 54px; display: flex; align-items: center; justify-content: space-between; position: fixed; top: 0; left: 0; right: 0; z-index: 200; }
     .logo { display: flex; align-items: center; }
     .top-right { font-size: 12px; color: #999; }
+    .open-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; background: var(--orange); color: white; font-size: 12px; font-weight: 600; text-decoration: none; border-radius: 5px; white-space: nowrap; transition: background 0.15s; }
+    .open-btn:hover { background: var(--orange-light); }
+    .open-btn svg { flex-shrink: 0; }
     .orange-stripe { height: 3px; background: var(--orange); position: fixed; top: 54px; left: 0; right: 0; z-index: 199; }
 
     /* ── Progress ── */
@@ -231,7 +234,12 @@
       </text>
     </svg>
   </div>
-  <div class="top-right"><a href="https://instructions.vibeworksguitars.com/vibeworks-build-guide.html">Open The Interactive Build Guide In Its Own Window</a></div>
+  <div class="top-right">
+    <a class="open-btn" href="https://instructions.vibeworksguitars.com/vibeworks-build-guide.html" target="_blank" rel="noopener">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      Open in new window
+    </a>
+  </div>
 </div>
 <div class="orange-stripe"></div>
 <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
