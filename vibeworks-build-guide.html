@@ -1189,5 +1189,15 @@
   // ─── Init ──────────────────────────────────────────────────
   buildSidebar();
 </script>
+  <script>
+  function sendHeight() {
+    window.parent.postMessage(
+      { height: document.body.scrollHeight },
+      'https://vibeworksguitars.com'
+    );
+  }
+  window.addEventListener('load', sendHeight);
+  window.addEventListener('resize', sendHeight);
+</script>
 </body>
 </html>
