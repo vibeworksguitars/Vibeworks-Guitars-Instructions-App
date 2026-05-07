@@ -21,6 +21,7 @@
     /* ── Top bar ── */
     .top-bar { background: var(--dark); color: white; padding: 0 24px; height: 54px; display: flex; align-items: center; justify-content: space-between; position: fixed; top: 0; left: 0; right: 0; z-index: 200; }
     .logo { display: flex; align-items: center; }
+    .logo a { display: flex; align-items: center; text-decoration: none; }
     .top-right { font-size: 12px; color: #999; }
     .open-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; background: var(--orange); color: white; font-size: 12px; font-weight: 600; text-decoration: none; border-radius: 5px; white-space: nowrap; transition: background 0.15s; }
     .open-btn:hover { background: var(--orange-light); }
@@ -225,6 +226,7 @@
 
 <div class="top-bar">
   <div class="logo">
+    <a href="https://www.vibeworksguitars.com" target="_blank" rel="noopener">
     <svg height="26" viewBox="0 0 260 26" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Vibeworks Guitars">
       <!-- Waveform icon -->
       <polyline points="0,13 5,13 7,4 10,22 13,1 16,24 19,8 22,18 25,13 30,13" stroke="white" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
@@ -233,6 +235,7 @@
         <tspan x="40" font-weight="300">vibeworks</tspan><tspan font-weight="700">guitars</tspan>
       </text>
     </svg>
+    </a>
   </div>
   <div class="top-right">
     <a class="open-btn" href="https://instructions.vibeworksguitars.com/vibeworks-build-guide.html" target="_blank" rel="noopener">
