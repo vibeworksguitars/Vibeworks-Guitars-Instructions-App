@@ -220,11 +220,82 @@
     .jack-card { flex: 1; background: white; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; text-align: center; }
     .jack-card img { width: 100%; display: block; }
     .jack-card-lbl { padding: 7px 10px; font-size: 13px; font-weight: 600; color: var(--dark); border-top: 1px solid var(--border); background: #fafafa; }
+
+    /* ── Hamburger button (hidden on desktop) ── */
+    .hamburger { display: none; flex-direction: column; justify-content: center; gap: 5px; width: 36px; height: 36px; background: none; border: none; cursor: pointer; padding: 4px; border-radius: 6px; flex-shrink: 0; }
+    .hamburger span { display: block; height: 2px; background: white; border-radius: 2px; transition: all 0.2s; }
+    .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    /* ── Sidebar overlay (mobile) ── */
+    .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 299; }
+    .sidebar-overlay.visible { display: block; }
+
+    /* ── Mobile styles ── */
+    @media (max-width: 700px) {
+      /* Top bar */
+      .hamburger { display: flex; }
+      .open-btn-text { display: none; }
+      .open-btn { padding: 7px 10px; gap: 0; }
+
+      /* Sidebar becomes a slide-in drawer */
+      .sidebar {
+        position: fixed;
+        top: 0; left: 0; bottom: 0;
+        width: 280px;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        z-index: 300;
+        top: 0;
+        padding-top: 70px;
+      }
+      .sidebar.open { transform: translateX(0); }
+
+      /* Main takes full width */
+      .layout { margin-top: 60px; }
+      .main { margin-left: 0; padding: 20px 16px 48px; max-width: 100%; }
+
+      /* Section header */
+      .sec-head { gap: 12px; margin-bottom: 18px; }
+      .sec-badge { width: 44px; height: 44px; }
+      .sec-title { font-size: 20px; }
+
+      /* Stack two-column grids */
+      .finish-grid { grid-template-columns: 1fr; }
+      .truss-row { flex-direction: column; }
+      .img-pair { flex-direction: column; }
+      .jack-pair { flex-direction: column; }
+      .intonation-row { flex-direction: column; }
+
+      /* YouTube cards */
+      .yt-card { flex-direction: column; }
+      .yt-thumb { width: 100%; height: 180px; }
+
+      /* PDF iframe — shorter on mobile, with open button */
+      .diag-pdf-wrap iframe { height: 340px; }
+
+      /* Footer nav */
+      .sec-footer { flex-direction: column; gap: 12px; align-items: stretch; }
+      .footer-btns { justify-content: flex-end; }
+
+      /* Congrats */
+      .congrats-title { font-size: 28px; }
+
+      /* Flow chart answer buttons — stack if needed */
+      .flow-ans-row { flex-wrap: wrap; }
+      .issue-row { gap: 8px; }
+      .issue-btn { font-size: 12px; padding: 7px 12px; }
+    }
   </style>
 </head>
 <body>
 
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
 <div class="top-bar">
+  <button class="hamburger" id="hamburger" aria-label="Open menu">
+    <span></span><span></span><span></span>
+  </button>
   <div class="logo">
     <a href="https://www.vibeworksguitars.com" target="_blank" rel="noopener">
     <svg height="26" viewBox="0 0 260 26" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Vibeworks Guitars">
@@ -240,7 +311,7 @@
   <div class="top-right">
     <a class="open-btn" href="https://instructions.vibeworksguitars.com/vibeworks-build-guide.html" target="_blank" rel="noopener">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-      Open in new window
+      <span class="open-btn-text">Open in new window</span>
     </a>
   </div>
 </div>
@@ -1209,6 +1280,36 @@
   }
   window.addEventListener('load', sendHeight);
   window.addEventListener('resize', sendHeight);
+</script>
+
+<script>
+  // ── Hamburger / sidebar drawer ──
+  const hamburger = document.getElementById('hamburger');
+  const sidebar   = document.getElementById('sidebar');
+  const overlay   = document.getElementById('sidebarOverlay');
+
+  function openSidebar() {
+    sidebar.classList.add('open');
+    overlay.classList.add('visible');
+    hamburger.classList.add('open');
+    hamburger.setAttribute('aria-expanded', 'true');
+  }
+  function closeSidebar() {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('visible');
+    hamburger.classList.remove('open');
+    hamburger.setAttribute('aria-expanded', 'false');
+  }
+
+  hamburger.addEventListener('click', () => {
+    sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+  });
+  overlay.addEventListener('click', closeSidebar);
+
+  // Close drawer when a nav item is tapped on mobile
+  sidebar.addEventListener('click', (e) => {
+    if (e.target.closest('.nav-item') && window.innerWidth <= 700) closeSidebar();
+  });
 </script>
 </body>
 </html>
